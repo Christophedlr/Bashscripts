@@ -18,6 +18,8 @@ function display_help() {
     echo "  -h, --help                  display this help and exit"
     echo "  -u, --user=user             indicate a user MySQL (by default is root user)"
     echo "  -p, --password=password     indicate a user MySQL password"
+    echo "  --cdb                       Create a database"
+    echo "  --ddb                       Delete a database"
     exit
 }
 
