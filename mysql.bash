@@ -47,6 +47,33 @@ function create_database() {
     fi
 }
 
+function delete_database() {
+    SQL=""
+    ERROR=""
+
+    if [[ $# -eq 3 ]]; then
+        SQL="DROP DATABASE IF EXISTS \`$1\`;"
+        echo ""
+        echo "Delete database $1"
+
+        if [[ $3 = "y" ]]; then
+            SQL="${SQL} REVOKE ALL PRIVILEGES ON $1.* TO '$2'@localhost;"
+            echo "Revoke database privileges"
+        fi
+
+        SQL="${SQL} FLUSH PRIVILEGES;"
+        mysql -u root --user=${USER} --password=${PASSWORD} -e "$SQL"
+
+        if [[ $? -eq 0 ]]; then
+            echo "Database ${NAME} has been deleted."
+        fi
+
+        echo ""
+
+        history -c
+    fi
+}
+
 function create_database_query() {
     NAME=""
     GRANT=""
@@ -68,6 +95,27 @@ function create_database_query() {
     create_database ${NAME} ${USERNAME} ${GRANT}
 }
 
+function delete_database_query() {
+    NAME=""
+    GRANT=""
+    USERNAME=""
+
+    check_password
+
+    read -p "Name of database: " NAME
+    read -p "Revoke all privileges for an user of database ? [Y/n]" -n 1 GRANT
+
+    if [[ ${GRANT} = "" ]]; then
+        GRANT=${DEFAULT}
+    fi
+
+    if [[ ${GRANT} = "y" ]]; then
+        read -p "Name of existing user: " USERNAME
+    fi
+
+    delete_database ${NAME} ${USERNAME} ${GRANT}
+}
+
 while getopts :-:hp:u: option; do
     case ${option} in
     -)
@@ -86,7 +134,9 @@ while getopts :-:hp:u: option; do
             ;;
             cdb)
                 create_database_query
-                ;;
+            ;;
+            ddb)
+                delete_database_query
         esac
     ;;
     h) display_help ;;
