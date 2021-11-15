@@ -1,7 +1,15 @@
 #!/bin/bash
 
+DEFAULT="y"
 USER="root"
 PASSWORD=""
+
+function check_password() {
+    if [[ -z ${PASSWORD} ]]; then
+        read -p "Enter a ${USER} password: " -s PASSWORD
+        echo ""
+    fi
+}
 
 function display_help() {
     echo "Usage: mysql.bash [OPTION]..."
@@ -11,6 +19,53 @@ function display_help() {
     echo "  -u, --user=user             indicate a user MySQL (by default is root user)"
     echo "  -p, --password=password     indicate a user MySQL password"
     exit
+}
+
+
+function create_database() {
+    SQL=""
+    ERROR=""
+
+    if [[ $# -eq 3 ]]; then
+        SQL="CREATE DATABASE IF NOT EXISTS \`$1\`;"
+        echo ""
+        echo "Create database $1"
+
+        if [[ $3 = "y" ]]; then
+            SQL="${SQL} GRANT ALL PRIVILEGES ON $1.* TO '$2'@localhost;"
+            echo "Grant database privileges"
+        fi
+
+        SQL="${SQL} FLUSH PRIVILEGES;"
+        mysql -u root --user=${USER} --password=${PASSWORD} -e "$SQL"
+
+        if [[ $? -eq 0 ]]; then
+            echo "Database ${NAME} has been created."
+        fi
+
+        history -c
+    fi
+}
+
+function create_database_query() {
+    NAME=""
+    GRANT=""
+    USERNAME="none"
+
+    check_password
+
+    read -p "Name of database: " NAME
+    read -p "Grant all privileges for an user ? [Y/n]" -n 1 GRANT
+
+    if [[ ${GRANT} = "" ]]; then
+        GRANT=${DEFAULT}
+    fi
+
+    if [[ ${GRANT} = "y" ]]; then
+        read -p "Name of existing user: " USERNAME
+    fi
+
+    create_database ${NAME} ${USERNAME} ${GRANT}
 }
 
 while getopts :-:hp:u: option; do
@@ -29,6 +84,9 @@ while getopts :-:hp:u: option; do
             password=*)
                 PASSWORD=${VALUE}
             ;;
+            cdb)
+                create_database_query
+                ;;
         esac
     ;;
     h) display_help ;;
@@ -36,8 +94,3 @@ while getopts :-:hp:u: option; do
     u) USER=$OPTARG ;;
     esac
 done
-
-if [[ -z ${PASSWORD} ]]; then
-    read -p "Enter a ${USER} password: " -s PASSWORD
-    echo ""
-fi
