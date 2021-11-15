@@ -13,15 +13,24 @@ function display_help() {
     exit
 }
 
-while getopts :hp:u: option; do
-    if [[ "$option" = "-" ]]; then
-        case $OPTARG in
-            help) option=h ;;
-            password) option=p ;;
-            user) option=u ;;
-        esac
-    fi
+while getopts :-:hp:u: option; do
     case ${option} in
+    -)
+        VALUE=${OPTARG#*=}
+        ARG=${OPTARG%=${VALUE}}
+
+        case ${OPTARG} in
+            help)
+                display_help
+            ;;
+            user=*)
+                USER=${VALUE}
+            ;;
+            password=*)
+                PASSWORD=${VALUE}
+            ;;
+        esac
+    ;;
     h) display_help ;;
     p) PASSWORD=$OPTARG ;;
     u) USER=$OPTARG ;;
