@@ -122,7 +122,12 @@ function delete_database_query() {
 
 function save_database() {
     echo "Saving database $1"
-    mysqldump -u ${USER} --password=${PASSWORD} --default-character-set=utf8 -i -B -a $1 > $1.sql
+    if [[ -z `which pv` ]]; then
+        mysqldump -u ${USER} --password=${PASSWORD} --default-character-set=utf8 -i -B -a $1 > $1.sql
+    else
+        mysqldump -u ${USER} --password=${PASSWORD} --default-character-set=utf8 -i -B -a $1 |pv > $1.sql
+    fi
+
     tar -cf $1.tar.gz $1.sql
     rm -f $1.sql
     history -c
@@ -131,7 +136,13 @@ function save_database() {
 function restore_database() {
     echo "Restore database $1"
     tar -xf $1.tar.gz
-    mysql -u ${USER} --password=${PASSWORD} < $1.sql
+
+    if [[ -z `which pv` ]]; then
+        mysql -u ${USER} --password=${PASSWORD} < $1.sql
+    else
+        pv $1.sql | mysql -u ${USER} --password=${PASSWORD}
+    fi
+
     rm -r $1.sql
     history -c
     echo "Database restored!"
