@@ -20,6 +20,7 @@ function display_help() {
     echo "  -p, --password=password     indicate a user MySQL password"
     echo "  --cdb                       Create a database"
     echo "  --ddb                       Delete a database"
+    echo "  --sdb                       Save a database"
     exit
 }
 
@@ -118,6 +119,14 @@ function delete_database_query() {
     delete_database ${NAME} ${USERNAME} ${GRANT}
 }
 
+function save_database() {
+    echo "Saving database $1"
+    mysqldump -u ${USER} --password=${PASSWORD} --default-character-set=utf8 -i -B -a $1 > $1.sql
+    tar -cf $1.tar.gz $1.sql
+    rm -f $1.sql
+    history -c
+}
+
 while getopts :-:hp:u: option; do
     case ${option} in
     -)
@@ -139,6 +148,9 @@ while getopts :-:hp:u: option; do
             ;;
             ddb)
                 delete_database_query
+            ;;
+            sdb=*)
+                save_database ${VALUE}
         esac
     ;;
     h) display_help ;;
