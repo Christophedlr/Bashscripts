@@ -20,7 +20,8 @@ function display_help() {
     echo "  -p, --password=password     indicate a user MySQL password"
     echo "  --cdb                       Create a database"
     echo "  --ddb                       Delete a database"
-    echo "  --sdb                       Save a database"
+    echo "  --sdb=dbname                Save a database"
+    echo "  --rdb=dbname                Restore a database"
     exit
 }
 
@@ -127,6 +128,15 @@ function save_database() {
     history -c
 }
 
+function restore_database() {
+    echo "Restore database $1"
+    tar -xf $1.tar.gz
+    mysql -u ${USER} --password=${PASSWORD} < $1.sql
+    rm -r $1.sql
+    history -c
+    echo "Database restored!"
+}
+
 while getopts :-:hp:u: option; do
     case ${option} in
     -)
@@ -151,6 +161,10 @@ while getopts :-:hp:u: option; do
             ;;
             sdb=*)
                 save_database ${VALUE}
+            ;;
+            rdb=*)
+                restore_database ${VALUE}
+            ;;
         esac
     ;;
     h) display_help ;;
