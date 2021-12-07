@@ -20,6 +20,10 @@ function check_python() {
   fi
 }
 
+function create_venv() {
+  python3 -m venv "${LOCATION}/venv"
+}
+
 while getopts :h option; do
   case ${option} in
     h) display_help ;;
@@ -45,8 +49,7 @@ if [[ ${CLONE} = "y" ]]; then
   echo "Create the Virtual Environment"
 
   check_python
-
-  python3 -m venv "${LOCATION}/venv"
+  create_venv
   echo ""
   echo "Install requirements"
   "${LOCATION}"/venv/bin/pip install -r "${LOCATION}"/requirements.txt
