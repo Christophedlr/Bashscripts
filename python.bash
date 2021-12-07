@@ -4,6 +4,11 @@ DEFAULT="y"
 GIT_REPOS=""
 LOCATION=""
 CLONE=""
+NEW=""
+PROJECT=""
+PACKAGE=""
+INSTALL=""
+VERSION=""
 
 function display_help() {
   echo "Usage: python.bash [OPTION]..."
@@ -21,7 +26,16 @@ function check_python() {
 }
 
 function create_venv() {
-  python3 -m venv "${LOCATION}/venv"
+  if [[ -z `which pv` ]]; then
+    python3 -m venv "${LOCATION}/venv"
+  else
+    python3 -m venv "${LOCATION}/venv" | pv -t
+  fi
+}
+
+function install_requirements() {
+  echo "Install requirements"
+  "${LOCATION}"/venv/bin/pip install -r "${LOCATION}"/requirements.txt
 }
 
 while getopts :h option; do
@@ -51,9 +65,57 @@ if [[ ${CLONE} = "y" ]]; then
   check_python
   create_venv
   echo ""
-  echo "Install requirements"
-  "${LOCATION}"/venv/bin/pip install -r "${LOCATION}"/requirements.txt
+  install_requirements
 
   echo ""
   echo "Your project has been cloned and configured"
+else
+  read -p "Create new project ? [Y/n] " -n 1 NEW
+  echo ""
+
+  if [[ ${NEW} = "" ]]; then
+    NEW=${DEFAULT}
+  fi
+
+  if [[ ${NEW} = "y" ]]; then
+    check_python
+    read -p "Name of project: " PROJECT
+
+    if [[ ${PROJECT} = "" ]]; then
+      echo "Project name is required"
+      exit
+    fi
+
+    read -p "Location of project: " LOCATION
+    mkdir -p "${LOCATION}"/"${PROJECT}"
+    LOCATION="${LOCATION}"/"${PROJECT}"
+    create_venv
+
+    read -p "Install packages ? [Y/n] " -n 1 INSTALL
+    echo ""
+
+    if [[ ${INSTALL} = "" ]]; then
+    INSTALL=${DEFAULT}
+    fi
+
+    if [[ ${INSTALL} = "y" ]]; then
+      while true; do
+          read -p "Package name: " PACKAGE
+
+          if [[ -z "${PACKAGE}" ]]; then
+            break
+          fi
+
+          read -p "Version: " VERSION
+
+          echo "Adding package in requirements"
+          echo "${PACKAGE}${VERSION}" >> "${LOCATION}"/requirements.txt
+          echo ""
+      done
+
+      install_requirements
+    fi
+
+    echo "Your project has been created"
+  fi
 fi
