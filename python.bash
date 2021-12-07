@@ -13,6 +13,13 @@ function display_help() {
   exit
 }
 
+function check_python() {
+  if [[ -z `which python3` ]]; then
+    echo "Python 3 not found"
+    exit
+  fi
+}
+
 while getopts :h option; do
   case ${option} in
     h) display_help ;;
@@ -37,10 +44,7 @@ if [[ ${CLONE} = "y" ]]; then
 
   echo "Create the Virtual Environment"
 
-  if [[ -z `which python3` ]]; then
-    echo "Python 3 not found"
-    exit
-  fi
+  check_python
 
   python3 -m venv "${LOCATION}/venv"
   echo ""
