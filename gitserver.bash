@@ -89,7 +89,7 @@ git init --shared --bare ${LOCATION_GIT_REPOS}
 echo "Creating user"
 read -p "Username: " USERNAME
 htpasswd -c ${LOCATION_GIT_REPOS}/.htpasswd ${USERNAME}
-chown -R www:data-www:data ${LOCATION_GIT_REPOS}
+chown -R www-data:www-data ${LOCATION_GIT_REPOS}
 
 echo "Enabling Apache2 configuration"
 a2enconf ${APACHE2_GIT_CONF}
