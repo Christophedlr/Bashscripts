@@ -109,7 +109,7 @@ else
           read -p "Version: " VERSION
 
           echo "Adding package in requirements"
-          echo "${PACKAGE}${VERSION}" >> "${LOCATION}"/requirements.txt
+          echo "${PACKAGE}==${VERSION}" >> "${LOCATION}"/requirements.txt
           echo ""
       done
 
