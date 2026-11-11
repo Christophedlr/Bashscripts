@@ -1,0 +1,20 @@
+# Sauvegarde hebdomadaire des images et volumes Docker.
+#
+# À installer dans /etc/cron.d/docker-backup (sans extension : cron ignore les
+# fichiers de /etc/cron.d dont le nom contient un point) :
+#   sudo install -m 644 -o root -g root docker-backup.cron /etc/cron.d/docker-backup
+#
+# Chaque dimanche à 3 h 00 :
+#   - sauvegarde de toutes les images et de tous les volumes ;
+#   - arrêt des conteneurs pendant la sauvegarde de leurs volumes (-s), pour des
+#     copies cohérentes des bases de données ;
+#   - suppression des sauvegardes de plus de 28 jours (-k 28).
+# flock empêche deux sauvegardes de tourner en même temps.
+#
+# Adapter les chemins si les scripts ou les sauvegardes sont ailleurs.
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# min heure jour mois jour-semaine utilisateur commande
+0 3 * * 0 root flock -n /run/docker-backup.lock /opt/scripts/docker/docker-backup.sh -o /var/backups/docker -s -k 28 >>/var/log/docker-backup.log 2>&1
